@@ -74,3 +74,115 @@ As the system evolves, several additional features and improvements could be imp
   * Implement an NLP-based query system that allows users to ask questions in natural language (e.g., "Which devices are nearing warranty expiration?" or "Show devices in Room 101"), and the system can respond with relevant data.
 * **AI-Enhanced Device Assignment Recommendations:**
   * Use AI to suggest device assignments based on historical patterns, user roles, and device usage trends, streamlining the process for staff.
+
+### database design (first draft)
+<br>
+
+```mermaid
+erDiagram
+    app_users {
+        INT user_id PK
+        VARCHAR username
+        VARCHAR password_hash
+        VARCHAR first_name
+        VARCHAR last_name
+        BOOLEAN is_admin
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    departments {
+        INT department_id PK
+        VARCHAR department_name
+        VARCHAR department_short_name
+    }
+
+    buildings {
+        INT building_id PK
+        VARCHAR building_name
+        VARCHAR building_short_name
+    }
+
+    locations {
+        INT location_id PK
+        INT building_id FK
+        INT floor_number
+        VARCHAR room_number
+        TEXT description
+    }
+
+    employment_types {
+        INT employment_type_id PK
+        VARCHAR employment_type_name
+    }
+
+    device_users {
+        INT device_user_id PK
+        VARCHAR first_name
+        VARCHAR last_name
+        INT department_id FK
+        INT employment_type_id FK
+        VARCHAR email
+        VARCHAR phone
+    }
+
+    equipment {
+        INT equipment_id PK
+        VARCHAR asset_tag
+        VARCHAR serial_number
+        VARCHAR device_name
+        INT location_id FK
+        VARCHAR status
+        VARCHAR manufacturer
+        VARCHAR model
+        VARCHAR form_factor
+        VARCHAR ram
+        VARCHAR storage_capacity
+        VARCHAR storage_type
+        VARCHAR operating_system
+        DATE warranty_start_date
+        DATE warranty_end_date
+        TEXT notes
+        TIMESTAMP created_at
+        TIMESTAMP updated_at
+    }
+
+    equipment_assignments {
+        INT assignment_id PK
+        INT equipment_id FK
+        INT device_user_id FK
+        DATE assignment_start_date
+        TEXT assignment_purpose
+        TIMESTAMP created_at
+    }
+
+    disposed_equipment {
+        INT disposal_id PK
+        INT equipment_id FK
+        VARCHAR disposal_reason
+        DATE disposal_date
+        TEXT disposal_notes
+    }
+
+    equipment_history {
+        INT history_id PK
+        INT equipment_id FK
+        INT location_id FK
+        VARCHAR status
+        INT device_user_id FK
+        DATE assignment_start_date
+        DATE assignment_end_date
+        TIMESTAMP change_date
+        INT change_made_by FK
+    }
+
+    app_users ||--o| equipment_history : "made changes"
+    device_users ||--o| equipment_assignments : "assigned"
+    departments ||--o| device_users : "belongs to"
+    buildings ||--o| locations : "located in"
+    locations ||--o| equipment : "stores"
+    equipment ||--o| equipment_assignments : "assigned to"
+    equipment ||--o| disposed_equipment : "disposed"
+    equipment ||--o| equipment_history : "tracked history"
+    employment_types ||--o| device_users : "has employment type"
+```
