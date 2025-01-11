@@ -1,0 +1,21 @@
+export type EquipmentFormData = {
+  asset_tag: string;
+  serial_number: string;
+  device_name: string;
+  manufacturer: string;
+  model: string;
+  status: string;
+  location_id: number;
+  create_assignment: boolean;
+  device_user_id?: number;
+  assignment_purpose?: string;
+  assignment_start_date?: string;
+  form_factor?: string;
+  ram?: string;
+  storage_capacity?: string;
+  storage_type?: string;
+  operating_system?: string;
+  warranty_start_date?: string;
+  warranty_end_date?: string;
+  notes?: string;
+};

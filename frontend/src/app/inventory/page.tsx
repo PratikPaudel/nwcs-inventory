@@ -4,6 +4,7 @@ import { PlusCircleIcon, SearchIcon } from "lucide-react";
 import { useState, useEffect } from "react";
 import Header from "@/app/components/Header";
 import CreateProductModal from "./CreateProductModal";
+import { EquipmentFormData } from "./types";
 
 interface Equipment {
   equipment_id: number;
@@ -21,14 +22,6 @@ interface Equipment {
     };
   };
 }
-
-type EquipmentFormData = {
-  asset_tag: string;
-  device_name: string;
-  manufacturer: string;
-  model: string;
-  status: string;
-};
 
 const Equipment = () => {
   const [searchTerm, setSearchTerm] = useState("");

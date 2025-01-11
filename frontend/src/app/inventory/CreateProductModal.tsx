@@ -3,6 +3,7 @@
 import { Dialog } from "@headlessui/react";
 import { useState, useEffect } from "react";
 import { XIcon, SearchIcon, ChevronDownIcon } from "lucide-react";
+import { EquipmentFormData } from "./types";
 
 interface Location {
   location_id: number;
@@ -23,36 +24,6 @@ interface DeviceUser {
   } | null;
 }
 
-interface EquipmentFormData {
-  // Required Fields
-  asset_tag: string;
-  serial_number: string;
-  status: string;
-  manufacturer: string;
-  model: string;
-
-  // Optional Hardware Details
-  form_factor?: string;
-  ram?: string;
-  storage_capacity?: string;
-  storage_type?: string;
-  operating_system?: string;
-
-  // Support Details
-  warranty_start_date?: string;
-  warranty_end_date?: string;
-  notes?: string;
-
-  // Location
-  location_id: number;
-
-  // Assignment (Optional)
-  create_assignment: boolean;
-  device_user_id?: number;
-  assignment_purpose?: string;
-  assignment_start_date?: string;
-}
-
 interface CreateProductModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -69,6 +40,7 @@ const CreateProductModal = ({
   const [formData, setFormData] = useState<EquipmentFormData>({
     asset_tag: "",
     serial_number: "",
+    device_name: "",
     status: "Available",
     manufacturer: "",
     model: "",
@@ -131,10 +103,22 @@ const CreateProductModal = ({
   const fetchLocations = async () => {
     try {
       const response = await fetch("http://localhost:8000/locations");
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new TypeError("Response is not JSON");
+      }
       const data = await response.json();
+      console.log("Locations data:", data);
       setLocations(data);
     } catch (error) {
       console.error("Error fetching locations:", error);
+      console.error("Error details:", {
+        message: error instanceof Error ? error.message : "Unknown error",
+        type: error instanceof Error ? error.name : "Unknown type",
+      });
     }
   };
 
