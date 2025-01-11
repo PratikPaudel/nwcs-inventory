@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from .routes import assignments, equipment  # Updated import
+from .routes import equipment, assignments, locations, buildings, device_users
 
 app = FastAPI(title="Equipment Management API")
 
@@ -13,9 +13,12 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include routers
-app.include_router(assignments.router, tags=["Assignments"])  # Updated router name
+# All routers
 app.include_router(equipment.router, tags=["Equipment"])
+app.include_router(assignments.router, tags=["Assignments"])
+app.include_router(locations.router, tags=["Locations"])
+app.include_router(buildings.router, tags=["Buildings"])
+app.include_router(device_users.router, tags=["Device Users"])
 
 
 @app.get("/")

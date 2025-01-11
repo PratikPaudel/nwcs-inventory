@@ -4,9 +4,11 @@ import React, { ChangeEvent, FormEvent, useState } from "react";
 import Header from "@/app/components/Header";
 
 type ProductFormData = {
-  name: string;
-  price: number;
-  stockQuantity: number;
+  asset_tag: string;
+  device_name: string;
+  manufacturer: string;
+  model: string;
+  status: string;
 };
 
 type CreateProductModalProps = {
@@ -20,17 +22,19 @@ const CreateProductModal = ({
   onClose,
   onCreate,
 }: CreateProductModalProps) => {
-  const [formData, setFormData] = useState({
-    name: "",
-    price: 0,
-    stockQuantity: 0,
+  const [formData, setFormData] = useState<ProductFormData>({
+    asset_tag: "",
+    device_name: "",
+    manufacturer: "",
+    model: "",
+    status: "Available",
   });
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: name === "name" ? value : Number(value),
+      [name]: value,
     });
   };
 
@@ -48,47 +52,64 @@ const CreateProductModal = ({
         <Header name="Add Product" />
         <form onSubmit={handleSubmit} className="mt-5 space-y-4">
           <div>
+            <label>Asset Tag</label>
+            <input
+              type="text"
+              name="asset_tag"
+              value={formData.asset_tag}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
+            <label>Device Name</label>
+            <input
+              type="text"
+              name="device_name"
+              value={formData.device_name}
+              onChange={handleChange}
+              required
+            />
+          </div>
+          <div>
             <label className="block text-sm font-medium text-gray-700">
-              Name
+              Manufacturer
             </label>
             <input
               type="text"
-              name="name"
-              value={formData.name}
+              name="manufacturer"
+              value={formData.manufacturer}
               onChange={handleChange}
               className="mt-1 block w-full p-2 border rounded-md"
               required
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Price
+              Model
             </label>
             <input
-              type="number"
-              name="price"
-              value={formData.price}
+              type="text"
+              name="model"
+              value={formData.model}
               onChange={handleChange}
               className="mt-1 block w-full p-2 border rounded-md"
               required
             />
           </div>
-
           <div>
             <label className="block text-sm font-medium text-gray-700">
-              Stock Quantity
+              Status
             </label>
             <input
-              type="number"
-              name="stockQuantity"
-              value={formData.stockQuantity}
+              type="text"
+              name="status"
+              value={formData.status}
               onChange={handleChange}
               className="mt-1 block w-full p-2 border rounded-md"
               required
             />
           </div>
-
           <div className="flex gap-2 mt-4">
             <button
               type="submit"
