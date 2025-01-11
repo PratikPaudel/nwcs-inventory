@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
 from .routes import (
     equipment,
     assignments,
@@ -7,6 +8,8 @@ from .routes import (
     buildings,
     device_users,
     dashboard,
+    reporting,
+    inventory,
 )
 
 app = FastAPI(title="Equipment Management API")
@@ -27,6 +30,8 @@ app.include_router(locations.router, tags=["Locations"])
 app.include_router(buildings.router, tags=["Buildings"])
 app.include_router(device_users.router, tags=["Device Users"])
 app.include_router(dashboard.router, tags=["Dashboard"])
+app.include_router(reporting.router, tags=["Reporting"])
+app.include_router(inventory.router)
 
 
 @app.get("/")

@@ -7,79 +7,78 @@ import logging
 router = APIRouter()
 
 
-@router.get("/equipment", response_model=List[dict])
-async def get_equipment(
-    page: int = Query(1, ge=1),
-    page_size: int = Query(10, ge=1, le=100),
-    status: Optional[str] = None,
-    location_id: Optional[int] = None,
-    search: Optional[str] = None,
-    manufacturer: Optional[str] = None,
-    model: Optional[str] = None,
-    sort_by: Optional[str] = "created_at",
-    sort_order: Optional[str] = "desc",
-):
-    """
-    Get equipment with filtering, pagination, and sorting.
-    """
+@router.get("/equipment")
+async def get_equipment():
     try:
-        print("\nProcessing equipment request...")
-
-        # Calculate range for pagination
-        start = (page - 1) * page_size
-        end = start + page_size - 1
-        print(f"Pagination: start={start}, end={end}")
-
-        # Build the select query with foreign key relationships
-        select_query = """
-            *,
-            location:locations (
-                location_id,
-                floor_number,
-                room_number,
-                building:buildings (
-                    building_name,
-                    building_short_name
+        response = (
+            supabase.from_("equipment")
+            .select(
+                """
+                *,
+                equipment_assignments (
+                    device_users (
+                        first_name,
+                        last_name
+                    )
+                ),
+                locations (
+                    buildings (
+                        building_name
+                    ),
+                    floor_number,
+                    room_number
                 )
+            """
             )
-        """
+            .execute()
+        )
 
-        query = supabase.from_("equipment").select(select_query)
+        # Transform the data to include the latest assignment and location
+        equipment_list = []
+        for item in response.data:
+            # Get current assignment if exists
+            current_assignment = None
+            if item.get("equipment_assignments"):
+                # Get the most recent assignment
+                current_assignment = sorted(
+                    item["equipment_assignments"],
+                    key=lambda x: x.get("assignment_start_date", ""),
+                    reverse=True,
+                )[0]
 
-        # Apply filters
-        if status:
-            query = query.eq("status", status)
-        if location_id:
-            query = query.eq("location_id", location_id)
-        if manufacturer:
-            query = query.ilike("manufacturer", f"%{manufacturer}%")
-        if model:
-            query = query.ilike("model", f"%{model}%")
+            # Format the data
+            equipment_data = {
+                "equipment_id": item.get("equipment_id"),
+                "asset_tag": item.get("asset_tag"),
+                "device_name": item.get("device_name"),
+                "manufacturer": item.get("manufacturer"),
+                "model": item.get("model"),
+                "form_factor": item.get("form_factor"),
+                "status": item.get("status"),
+                "assigned_to": (
+                    current_assignment.get("device_users")
+                    if current_assignment
+                    else None
+                ),
+                "location": (
+                    {
+                        "building_name": item.get("locations", {})
+                        .get("buildings", {})
+                        .get("building_name"),
+                        "floor_number": item.get("locations", {}).get("floor_number"),
+                        "room_number": item.get("locations", {}).get("room_number"),
+                    }
+                    if item.get("locations")
+                    else None
+                ),
+            }
+            equipment_list.append(equipment_data)
 
-        # Apply search if provided
-        if search:
-            query = query.or_(
-                f"asset_tag.ilike.%{search}%,"
-                f"device_name.ilike.%{search}%,"
-                f"serial_number.ilike.%{search}%"
-            )
-
-        # Apply sorting
-        if sort_by and sort_order:
-            query = query.order(sort_by, desc=(sort_order.lower() == "desc"))
-
-        # Apply pagination
-        query = query.range(start, end)
-
-        print("Executing query...")
-        response = query.execute()
-        print(f"Query response: {response.data if response else 'No response'}")
-
-        return response.data
+        return equipment_list
 
     except Exception as e:
-        print(f"Error in get_equipment: {str(e)}")
-        raise HTTPException(status_code=400, detail=str(e))
+        print(f"Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/equipment/{equipment_id}", response_model=dict)
