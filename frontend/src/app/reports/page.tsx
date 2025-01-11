@@ -1,8 +1,8 @@
 "use client";
 
+import React from "react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Select,
   SelectContent,
@@ -18,8 +18,44 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Loader2 } from "lucide-react";
-import { format } from "date-fns";
+import {
+  Loader2,
+  Info,
+  AlertTriangle,
+  XCircle,
+  RefreshCw,
+  UserPlus,
+  MapPin,
+} from "lucide-react";
+import { format, formatDistanceToNow } from "date-fns";
+
+// Define the getActivityColor function
+function getActivityColor(activityType: string): string {
+  switch (activityType) {
+    case "info":
+      return "bg-blue-100 text-blue-800";
+    case "warning":
+      return "bg-yellow-100 text-yellow-800";
+    case "error":
+      return "bg-red-100 text-red-800";
+    default:
+      return "bg-gray-100 text-gray-800";
+  }
+}
+
+// Define the getActivityIcon function
+function getActivityIcon(activityType: string): React.ReactElement {
+  switch (activityType) {
+    case "info":
+      return <Info className="h-4 w-4 text-blue-800" />;
+    case "warning":
+      return <AlertTriangle className="h-4 w-4 text-yellow-800" />;
+    case "error":
+      return <XCircle className="h-4 w-4 text-red-800" />;
+    default:
+      return <Info className="h-4 w-4 text-gray-800" />;
+  }
+}
 
 interface ReportFilters {
   equipmentType: string;
@@ -37,6 +73,53 @@ interface ReportData {
   updated_at: string;
 }
 
+// Define the type for an activity
+interface Activity {
+  id: number;
+  type: string;
+  description: string;
+  created_at: string;
+}
+
+interface EquipmentHistory {
+  history_id: number;
+  equipment_id: number;
+  location_id: number | null;
+  status: string;
+  device_user_id: number | null;
+  assignment_start_date: string | null;
+  assignment_end_date: string | null;
+  change_date: string;
+  change_made_by: number;
+  // Joined fields
+  device_name?: string;
+  location_name?: string;
+  user_name?: string;
+  changed_by_name?: string;
+}
+
+const getHistoryMessage = (history: EquipmentHistory): string => {
+  const messages = [];
+
+  if (history.status) {
+    messages.push(`Status changed to ${history.status}`);
+  }
+
+  if (history.device_user_id) {
+    messages.push(
+      history.assignment_end_date
+        ? `Unassigned from ${history.user_name}`
+        : `Assigned to ${history.user_name}`
+    );
+  }
+
+  if (history.location_id) {
+    messages.push(`Moved to ${history.location_name}`);
+  }
+
+  return messages.join(", ");
+};
+
 export default function ReportsPage() {
   const [filters, setFilters] = useState<ReportFilters>({
     equipmentType: "",
@@ -48,6 +131,29 @@ export default function ReportsPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [reportData, setReportData] = useState<ReportData[]>([]);
   const [showReport, setShowReport] = useState(false);
+  const [activities] = useState<Activity[]>([
+    {
+      id: 1,
+      type: "info",
+      description: "System update completed",
+      created_at: "2023-10-01T10:00:00Z",
+    },
+    {
+      id: 2,
+      type: "warning",
+      description: "High memory usage detected",
+      created_at: "2023-10-02T12:30:00Z",
+    },
+    {
+      id: 3,
+      type: "error",
+      description: "Failed login attempt",
+      created_at: "2023-10-03T14:45:00Z",
+    },
+  ]);
+  const [equipmentHistory, setEquipmentHistory] = useState<EquipmentHistory[]>(
+    []
+  );
 
   const handleGenerateReport = async () => {
     setIsLoading(true);
@@ -280,6 +386,73 @@ export default function ReportsPage() {
           )}
         </div>
       )}
+
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">Recent Activities</h2>
+        <div className="bg-white rounded-lg shadow">
+          {activities.map((activity) => (
+            <div
+              key={activity.id}
+              className="p-4 border-b last:border-0 flex items-start space-x-3"
+            >
+              <div
+                className={`p-2 rounded-full ${getActivityColor(
+                  activity.type
+                )}`}
+              >
+                {getActivityIcon(activity.type)}
+              </div>
+              <div>
+                <p className="text-sm text-gray-900">{activity.description}</p>
+                <p className="text-xs text-gray-500">
+                  {formatDistanceToNow(new Date(activity.created_at), {
+                    addSuffix: true,
+                  })}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="mt-8">
+        <h2 className="text-xl font-semibold mb-4">Equipment History</h2>
+        <div className="bg-white rounded-lg shadow">
+          {equipmentHistory.map((history) => (
+            <div
+              key={history.history_id}
+              className="p-4 border-b last:border-0 flex items-start space-x-3"
+            >
+              <div className="p-2 rounded-full bg-primary/10">
+                {history.status && (
+                  <RefreshCw className="h-4 w-4 text-primary" />
+                )}
+                {history.device_user_id && (
+                  <UserPlus className="h-4 w-4 text-primary" />
+                )}
+                {history.location_id && (
+                  <MapPin className="h-4 w-4 text-primary" />
+                )}
+              </div>
+              <div>
+                <p className="text-sm text-gray-900">
+                  {getHistoryMessage(history)}
+                </p>
+                <div className="flex items-center gap-2 mt-1">
+                  <p className="text-xs text-gray-500">
+                    {formatDistanceToNow(new Date(history.change_date), {
+                      addSuffix: true,
+                    })}
+                  </p>
+                  <span className="text-xs text-gray-400">
+                    by {history.changed_by_name}
+                  </span>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }

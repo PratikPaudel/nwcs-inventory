@@ -10,6 +10,7 @@ from .routes import (
     dashboard,
     reporting,
     inventory,
+    users,
 )
 
 app = FastAPI(title="Equipment Management API")
@@ -32,6 +33,7 @@ app.include_router(device_users.router, tags=["Device Users"])
 app.include_router(dashboard.router, tags=["Dashboard"])
 app.include_router(reporting.router, tags=["Reporting"])
 app.include_router(inventory.router)
+app.include_router(users.router, tags=["Users"])
 
 
 @app.get("/")
