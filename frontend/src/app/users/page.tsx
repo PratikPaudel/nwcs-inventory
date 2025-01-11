@@ -1,35 +1,41 @@
 "use client";
 
-import React from "react";
+import Header from "@/app/components/Header";
+import { DataGrid, GridColDef } from "@mui/x-data-grid";
 
-export default function UsersPage(): React.ReactElement {
+interface User {
+  userId: string;
+  name: string;
+  email: string;
+}
+
+const columns: GridColDef[] = [
+  { field: "userId", headerName: "ID", width: 90 },
+  { field: "name", headerName: "Name", width: 200 },
+  { field: "email", headerName: "Email", width: 200 },
+];
+
+// Add dummy data
+const dummyUsers = [
+  { userId: "1", name: "John Doe", email: "john@example.com" },
+  { userId: "2", name: "Jane Smith", email: "jane@example.com" },
+  { userId: "3", name: "Bob Johnson", email: "bob@example.com" },
+  { userId: "4", name: "Alice Brown", email: "alice@example.com" },
+];
+
+const Users = () => {
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-6">Staff & Faculty Management</h1>
-
-      <div className="flex gap-4 mb-6">
-        <div className="flex-1">
-          <input
-            type="text"
-            placeholder="Search by username..."
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
-
-        <select className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <option value="">All Roles</option>
-          <option value="faculty">Faculty</option>
-          <option value="staff">Staff</option>
-          <option value="admin">Admin</option>
-        </select>
-
-        <select className="px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
-          <option value="">Device Count</option>
-          <option value="0">No Devices</option>
-          <option value="1-3">1-3 Devices</option>
-          <option value="4+">4+ Devices</option>
-        </select>
-      </div>
+    <div className="flex flex-col">
+      <Header name="Users" />
+      <DataGrid
+        rows={dummyUsers}
+        columns={columns}
+        getRowId={(row: User) => row.userId}
+        checkboxSelection
+        className="bg-white shadow rounded-lg border border-gray-200 mt-5 !text-gray-700"
+      />
     </div>
   );
-}
+};
+
+export default Users;

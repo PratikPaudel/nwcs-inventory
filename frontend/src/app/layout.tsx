@@ -1,16 +1,12 @@
-import type { Metadata } from "next";
+"use client";
+
 import { Inter } from "next/font/google";
 import "./globals.css";
-import Navbar from "./components/Navbar";
-import Sidebar from "./components/Sidebar";
-import PageHeader from "./components/Header";
+import DashboardWrapper from "./dashboardWrapper";
+import { Provider } from "react-redux";
+import { store } from "@/app/redux/store";
 
 const inter = Inter({ subsets: ["latin"] });
-
-export const metadata: Metadata = {
-  title: "Asset Management System",
-  description: "Asset Management System for tracking devices",
-};
 
 export default function RootLayout({
   children,
@@ -20,11 +16,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <div className="min-h-screen bg-gray-50">
-          <PageHeader title="Asset Management System" />
-          <Navbar />
-          <Sidebar>{children}</Sidebar>
-        </div>
+        <Provider store={store}>
+          <DashboardWrapper>{children}</DashboardWrapper>
+        </Provider>
       </body>
     </html>
   );
