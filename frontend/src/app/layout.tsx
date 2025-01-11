@@ -3,8 +3,6 @@
 import { Inter } from "next/font/google";
 import "./globals.css";
 import DashboardWrapper from "./dashboardWrapper";
-import { Provider } from "react-redux";
-import { store } from "@/app/redux/store";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,9 +14,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <Provider store={store}>
-          <DashboardWrapper>{children}</DashboardWrapper>
-        </Provider>
+        <DashboardWrapper>{children}</DashboardWrapper>
       </body>
     </html>
   );
